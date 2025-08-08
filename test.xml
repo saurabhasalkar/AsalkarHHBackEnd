@@ -1,47 +1,53 @@
-<definitions xmlns="http://www.omg.org/spec/CMMN/20151109/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cmmndi="http://www.omg.org/spec/CMMN/20151109/CMMNDI" xmlns:dc="http://www.omg.org/spec/CMMN/20151109/DC" xmlns:di="http://www.omg.org/spec/CMMN/20151109/DI" xmlns:flowable="http://flowable.org/cmmn" id="definition-id" targetNamespace="http://www.flowable.org/casedef">
-<!--  1. Case Definition  -->
-<case id="myCase" name="My Case">
-<!--  2. Case Plan Model  -->
-<casePlanModel id="casePlanModel" name="Case Plan Model" flowable:formKey="startForm">
-<!--  3. Plan Items  -->
-<planItem id="planItem1" definitionRef="task1"/>
-<planItem id="planItem2" definitionRef="task2"/>
-<planItem id="planItem3" definitionRef="stage1"/>
-<planItem id="planItem4" definitionRef="milestone1"/>
-<planItem id="planItem5" definitionRef="processTask1"/>
-<planItem id="planItem6" definitionRef="caseTask1"/>
-<planItem id="planItem7" definitionRef="decisionTask1"/>
-<planItem id="planItem8" definitionRef="userEvent1"/>
-<planItem id="planItem9" definitionRef="timerEvent1"/>
-<!--  4. Human and Other Task Definitions  -->
-<humanTask id="task1" name="Upload Document"/>
-<humanTask id="task2" name="Review Document"/>
-<processTask id="processTask1" name="Call BPMN Process"/>
-<caseTask id="caseTask1" name="Call Another Case"/>
-<decisionTask id="decisionTask1" name="Evaluate Decision Table"/>
-<stage id="stage1" name="Review Stage"/>
-<milestone id="milestone1" name="Case Finished"/>
-<userEventListener id="userEvent1" name="Wait for User"/>
-<timerEventListener id="timerEvent1" name="Wait Timer"/>
-<!--  5. Criteria  -->
-<entryCriterion id="entry1" sentryRef="sentry1"/>
-<exitCriterion id="exit1" sentryRef="sentry2"/>
-<!--  6. Sentries  -->
-<sentry id="sentry1">
-<ifPart>
-<condition xsi:type="tExpression">${uploadComplete}</condition>
-</ifPart>
-</sentry>
-<sentry id="sentry2">
-<ifPart>
-<condition xsi:type="tExpression">${reviewAccepted}</condition>
-</ifPart>
-</sentry>
-</casePlanModel>
-<!--  7. Optional: Roles  -->
-<role id="userRole" name="User"/>
-<role id="reviewerRole" name="Reviewer"/>
-<!--  8. Optional: Case File Model  -->
-<caseFileModel id="caseFileModel1">
-<caseFileItem id="uploadedFile" name="File"/>
-</caseFileMo
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/CMMN/20151109/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:flowable="http://flowable.org/cmmn"
+             targetNamespace="http://flowable.org/cmmn">
+
+    <case id="projectCase" name="Project Flow Case">
+        <casePlanModel id="casePlanModel" name="Main Plan Model" flowable:formKey="startForm" isBlocking="true">
+
+            <planItem id="uploadTemplateItem" definitionRef="uploadTemplateTask"/>
+            <humanTask id="uploadTemplateTask" name="Upload - Template" flowable:assignee="user1"/>
+
+            <planItem id="updateT1T2Item" definitionRef="updateT1T2Task">
+                <entryCriterion id="entry1" sentryRef="sentryAfterUpload"/>
+            </planItem>
+            <humanTask id="updateT1T2Task" name="Update T1 & T2" flowable:assignee="user2"/>
+
+            <planItem id="updateT3Item" definitionRef="updateT3Task">
+                <entryCriterion id="entry2" sentryRef="sentryAfterUpload"/>
+            </planItem>
+            <humanTask id="updateT3Task" name="Update T3" flowable:assignee="user3"/>
+
+            <sentry id="sentryAfterUpload">
+                <ifPart>
+                    <condition>${uploadTemplateTask == 'completed'}</condition>
+                </ifPart>
+            </sentry>
+
+            <planItem id="consolidateItem" definitionRef="consolidateTask">
+                <entryCriterion id="entry3" sentryRef="sentryAfterUpdates"/>
+            </planItem>
+            <humanTask id="consolidateTask" name="Consolidate" flowable:assignee="user4"/>
+
+            <sentry id="sentryAfterUpdates">
+                <ifPart>
+                    <condition>${updateT1T2Task == 'completed' && updateT3Task == 'completed'}</condition>
+                </ifPart>
+            </sentry>
+
+            <planItem id="reviewItem" definitionRef="reviewTask">
+                <entryCriterion id="entry4" sentryRef="sentryAfterConsolidate"/>
+            </planItem>
+            <humanTask id="reviewTask" name="Review Consolidated File" flowable:assignee="reviewer"/>
+
+            <sentry id="sentryAfterConsolidate">
+                <ifPart>
+                    <condition>${consolidateTask == 'completed'}</condition>
+                </ifPart>
+            </sentry>
+
+        </casePlanModel>
+    </case>
+</definitions>
