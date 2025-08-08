@@ -1,59 +1,98 @@
-CMMN TAG LIST AND DESCRIPTION
+CMMN XML EXPLANATION FOR: projectCase
 
-1. TOP-LEVEL STRUCTURE TAGS
----------------------------
-<definitions>          - Root element of the CMMN XML file
-<case>                 - Defines a single case
-<casePlanModel>        - The plan model that holds all case tasks and logic
-<planItem>             - Reference to a task, milestone, or stage
-<stage>                - A grouping container like a subprocess in BPMN
+------------------------------------------------------------
+ROOT TAG
+<definitions>
+- The root element of the CMMN XML definition.
+- Declares XML namespaces and the Flowable target namespace.
 
-2. PLAN ITEM DEFINITIONS (TASKS & EVENTS)
-----------------------------------------
-<humanTask>            - A task performed by a user
-<processTask>          - Invokes a BPMN process
-<caseTask>             - Invokes another CMMN case
-<task>                 - Generic task (rarely used)
-<decisionTask>         - Executes a DMN decision table
-<milestone>            - Marks a milestone in the case
-<timerEventListener>   - Waits for a timer event
-<userEventListener>    - Waits for user interaction
-<genericEventListener> - Used for custom event types
+------------------------------------------------------------
+CASE DEFINITION
+<case id="projectCase" name="Project Flow Case">
+- Defines a case model with ID 'projectCase' and display name 'Project Flow Case'.
 
-3. RULES & BEHAVIOR
--------------------
-<entryCriterion>       - Specifies conditions to start a plan item
-<exitCriterion>        - Specifies conditions to exit a plan item
-<sentry>               - Encapsulates logic for entry/exit
-<ifPart>               - Defines condition inside sentry
-<onPart>               - Defines event-based trigger in sentry
-<condition>            - Expression to evaluate (e.g., ${x > 5})
-<parameterMapping>     - Used in process/case/decision tasks to map variables
-<sourceRef> / <targetRef> - Used within <parameterMapping>
+------------------------------------------------------------
+CASE PLAN MODEL
+<casePlanModel id="casePlanModel" name="Main Plan Model" ...>
+- The main container for your task flow.
+- flowable:formKey="startForm": Optional form to start the case.
+- isBlocking="true": All tasks must be completed before proceeding.
 
-4. ROLES & CASE FILE
---------------------
-<role>                 - Defines a role/participant in the case
-<caseFileModel>        - Container for file/data model (optional)
-<caseFileItem>         - Represents a file/data entity in the case
+------------------------------------------------------------
+PLAN ITEMS (TASKS)
+Each task is defined using a planItem (trigger point) and a humanTask (action)
 
-5. FLOWABLE EXTENSIONS (ATTRIBUTES)
------------------------------------
-flowable:assignee              - Assigns a user to a task
-flowable:candidateUsers        - List of candidate users
-flowable:candidateGroups       - List of candidate groups
-flowable:formKey               - Binds a form to a task or case start
-flowable:priority              - Sets task priority
-flowable:dueDate               - Sets due date for task
-flowable:repetitionRule        - Makes a plan item repeatable
-flowable:requiredRule          - Defines mandatory plan items
-flowable:manualActivationRule  - Controls if manual start is required
+1. Upload - Template (user1)
+<planItem id="uploadTemplateItem" definitionRef="uploadTemplateTask"/>
+<humanTask id="uploadTemplateTask" name="Upload - Template" flowable:assignee="user1"/>
 
-6. VISUAL MODEL TAGS (DIAGRAM INFO)
------------------------------------
-<cmmndi:CMMNDI>        - Container for diagram layout
-<cmmndi:CMMNDiagram>   - Visual representation of the case
-<cmmndi:CMMNShape>     - Visual shape for a task/item
-<cmmndi:CMMNEdge>      - Connector line between elements
-<dc:Bounds>            - Shape position and size
-<di:waypoint>          - Waypoint coordinates for edges
+- First task in the flow.
+- No dependencies, starts immediately.
+
+2. Update T1 & T2 (user2)
+<planItem id="updateT1T2Item" definitionRef="updateT1T2Task">
+    <entryCriterion id="entry1" sentryRef="sentryAfterUpload"/>
+</planItem>
+<humanTask id="updateT1T2Task" name="Update T1 & T2" flowable:assignee="user2"/>
+
+- Can only start once "Upload - Template" is completed.
+- Controlled by "sentryAfterUpload".
+
+3. Update T3 (user3)
+<planItem id="updateT3Item" definitionRef="updateT3Task">
+    <entryCriterion id="entry2" sentryRef="sentryAfterUpload"/>
+</planItem>
+<humanTask id="updateT3Task" name="Update T3" flowable:assignee="user3"/>
+
+- Also starts after Upload - Template, runs in parallel with T1 & T2.
+
+4. Consolidate (user4)
+<planItem id="consolidateItem" definitionRef="consolidateTask">
+    <entryCriterion id="entry3" sentryRef="sentryAfterUpdates"/>
+</planItem>
+<humanTask id="consolidateTask" name="Consolidate" flowable:assignee="user4"/>
+
+- Can only start once both Update T1 & T2 and Update T3 are completed.
+
+5. Review Consolidated File (reviewer)
+<planItem id="reviewItem" definitionRef="reviewTask">
+    <entryCriterion id="entry4" sentryRef="sentryAfterConsolidate"/>
+</planItem>
+<humanTask id="reviewTask" name="Review Consolidated File" flowable:assignee="reviewer"/>
+
+- Final review task.
+- Only activates after Consolidate is completed.
+
+------------------------------------------------------------
+SENTRIES (CONDITIONAL TRIGGERS)
+
+1. sentryAfterUpload
+<sentry id="sentryAfterUpload">
+  <condition>${uploadTemplateTask == 'completed'}</condition>
+</sentry>
+- Controls both Update T1&T2 and Update T3
+
+2. sentryAfterUpdates
+<sentry id="sentryAfterUpdates">
+  <condition>${updateT1T2Task == 'completed' && updateT3Task == 'completed'}</condition>
+</sentry>
+- Controls Consolidate
+
+3. sentryAfterConsolidate
+<sentry id="sentryAfterConsolidate">
+  <condition>${consolidateTask == 'completed'}</condition>
+</sentry>
+- Controls Review Consolidated File
+
+------------------------------------------------------------
+FLOW SUMMARY
+
+START
+ └─> Upload - Template (user1)
+       ├─> Update T1 & T2 (user2)
+       ├─> Update T3 (user3)
+              └─> Consolidate (user4)
+                      └─> Review Consolidated File (reviewer)
+                              └─> END
+
+------------------------------------------------------------
