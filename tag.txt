@@ -1,0 +1,59 @@
+CMMN TAG LIST AND DESCRIPTION
+
+1. TOP-LEVEL STRUCTURE TAGS
+---------------------------
+<definitions>          - Root element of the CMMN XML file
+<case>                 - Defines a single case
+<casePlanModel>        - The plan model that holds all case tasks and logic
+<planItem>             - Reference to a task, milestone, or stage
+<stage>                - A grouping container like a subprocess in BPMN
+
+2. PLAN ITEM DEFINITIONS (TASKS & EVENTS)
+----------------------------------------
+<humanTask>            - A task performed by a user
+<processTask>          - Invokes a BPMN process
+<caseTask>             - Invokes another CMMN case
+<task>                 - Generic task (rarely used)
+<decisionTask>         - Executes a DMN decision table
+<milestone>            - Marks a milestone in the case
+<timerEventListener>   - Waits for a timer event
+<userEventListener>    - Waits for user interaction
+<genericEventListener> - Used for custom event types
+
+3. RULES & BEHAVIOR
+-------------------
+<entryCriterion>       - Specifies conditions to start a plan item
+<exitCriterion>        - Specifies conditions to exit a plan item
+<sentry>               - Encapsulates logic for entry/exit
+<ifPart>               - Defines condition inside sentry
+<onPart>               - Defines event-based trigger in sentry
+<condition>            - Expression to evaluate (e.g., ${x > 5})
+<parameterMapping>     - Used in process/case/decision tasks to map variables
+<sourceRef> / <targetRef> - Used within <parameterMapping>
+
+4. ROLES & CASE FILE
+--------------------
+<role>                 - Defines a role/participant in the case
+<caseFileModel>        - Container for file/data model (optional)
+<caseFileItem>         - Represents a file/data entity in the case
+
+5. FLOWABLE EXTENSIONS (ATTRIBUTES)
+-----------------------------------
+flowable:assignee              - Assigns a user to a task
+flowable:candidateUsers        - List of candidate users
+flowable:candidateGroups       - List of candidate groups
+flowable:formKey               - Binds a form to a task or case start
+flowable:priority              - Sets task priority
+flowable:dueDate               - Sets due date for task
+flowable:repetitionRule        - Makes a plan item repeatable
+flowable:requiredRule          - Defines mandatory plan items
+flowable:manualActivationRule  - Controls if manual start is required
+
+6. VISUAL MODEL TAGS (DIAGRAM INFO)
+-----------------------------------
+<cmmndi:CMMNDI>        - Container for diagram layout
+<cmmndi:CMMNDiagram>   - Visual representation of the case
+<cmmndi:CMMNShape>     - Visual shape for a task/item
+<cmmndi:CMMNEdge>      - Connector line between elements
+<dc:Bounds>            - Shape position and size
+<di:waypoint>          - Waypoint coordinates for edges
