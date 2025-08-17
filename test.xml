@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/CMMN/20151109/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:flowable="http://flowable.org/cmmn"
+             targetNamespace="http://flowable.org/cmmn">
+
+    <case id="projectCase" name="Project Flow Case">
+        <casePlanModel id="casePlanModel" name="Main Plan Model" flowable:formKey="startForm" isBlocking="true">
+
+            <planItem id="uploadTemplateItem" definitionRef="uploadTemplateTask"/>
+            <humanTask id="uploadTemplateTask" name="Upload - Template" flowable:assignee="user1"/>
+
+            <planItem id="updateT1T2Item" definitionRef="updateT1T2Task">
+                <entryCriterion id="entry1" sentryRef="sentryAfterUpload"/>
+            </planItem>
+            <humanTask id="updateT1T2Task" name="Update T1 & T2" flowable:assignee="user2"/>
+
+            <planItem id="updateT3Item" definitionRef="updateT3Task">
+                <entryCriterion id="entry2" sentryRef="sentryAfterUpload"/>
+            </planItem>
+            <humanTask id="updateT3Task" name="Update T3" flowable:assignee="user3"/>
+
+            <sentry id="sentryAfterUpload">
+                <ifPart>
+                    <condition>${uploadTemplateTask == 'completed'}</condition>
+                </ifPart>
+            </sentry>
+
+            <planItem id="consolidateItem" definitionRef="consolidateTask">
+                <entryCriterion id="entry3" sentryRef="sentryAfterUpdates"/>
+            </planItem>
+            <humanTask id="consolidateTask" name="Consolidate" flowable:assignee="user4"/>
+
+            <sentry id="sentryAfterUpdates">
+                <ifPart>
+                    <condition>${updateT1T2Task == 'completed' && updateT3Task == 'completed'}</condition>
+                </ifPart>
+            </sentry>
+
+            <planItem id="reviewItem" definitionRef="reviewTask">
+                <entryCriterion id="entry4" sentryRef="sentryAfterConsolidate"/>
+            </planItem>
+            <humanTask id="reviewTask" name="Review Consolidated File" flowable:assignee="reviewer"/>
+
+            <sentry id="sentryAfterConsolidate">
+                <ifPart>
+                    <condition>${consolidateTask == 'completed'}</condition>
+                </ifPart>
+            </sentry>
+
+        </casePlanModel>
+    </case>
+</definitions>

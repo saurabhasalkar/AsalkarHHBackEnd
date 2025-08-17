@@ -1,0 +1,425 @@
+{
+	"info": {
+		"name": "AsalkarHealthyHub API",
+		"description": "Complete API collection for AsalkarHealthyHub backend endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "jwt_token",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"USER\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Login User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Register Owner",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Store Owner\",\n  \"email\": \"owner@asalkarhealthyhub.com\",\n  \"password\": \"owner123\",\n  \"role\": \"OWNER\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Register Customer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Customer User\",\n  \"email\": \"customer@example.com\",\n  \"password\": \"customer123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "register"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "Get All Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products"]
+						}
+					}
+				},
+				{
+					"name": "Get Product by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "1"]
+						}
+					}
+				},
+				{
+					"name": "Get Products by Category - Coconut Oil",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/category/Coconut Oil",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "category", "Coconut Oil"]
+						}
+					}
+				},
+				{
+					"name": "Get Products by Category - Sesame Oil",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/category/Sesame Oil",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "category", "Sesame Oil"]
+						}
+					}
+				},
+				{
+					"name": "Get Products by Category - Olive Oil",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/category/Olive Oil",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "category", "Olive Oil"]
+						}
+					}
+				},
+				{
+					"name": "Add Product - Almond Oil (Owner Only)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Premium Almond Oil\",\n  \"description\": \"Cold-pressed almond oil with natural goodness\",\n  \"price\": 399.99,\n  \"imageUrl\": \"/assets/almond-oil.jpg\",\n  \"category\": \"Almond Oil\",\n  \"volume\": \"250ml\",\n  \"inStock\": true,\n  \"benefits\": \"Rich in Vitamin E, good for skin and hair\",\n  \"extractionMethod\": \"Cold-pressed method\",\n  \"stockQuantity\": 20\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/products",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products"]
+						}
+					}
+				},
+				{
+					"name": "Add Product - Castor Oil (Owner Only)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Pure Castor Oil\",\n  \"description\": \"Cold-pressed castor oil for hair and skin care\",\n  \"price\": 189.99,\n  \"imageUrl\": \"/assets/castor-oil.jpg\",\n  \"category\": \"Castor Oil\",\n  \"volume\": \"200ml\",\n  \"inStock\": true,\n  \"benefits\": \"Promotes hair growth, moisturizes skin\",\n  \"extractionMethod\": \"Cold-pressed method\",\n  \"stockQuantity\": 30\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/products",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products"]
+						}
+					}
+				},
+				{
+					"name": "Update Product (Owner Only)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Pure Coconut Oil - Updated\",\n  \"description\": \"Premium cold-pressed coconut oil - Updated\",\n  \"price\": 319.99,\n  \"imageUrl\": \"/assets/coconut-oil.jpg\",\n  \"category\": \"Coconut Oil\",\n  \"volume\": \"500ml\",\n  \"inStock\": true,\n  \"benefits\": \"Rich in MCTs, boosts immunity\",\n  \"extractionMethod\": \"Traditional cold-pressed method\",\n  \"stockQuantity\": 45\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/products/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "1"]
+						}
+					}
+				},
+				{
+					"name": "Delete Product (Owner Only)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/8",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "8"]
+						}
+					}
+				},
+				{
+					"name": "Get In-Stock Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/in-stock",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "in-stock"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Cart",
+			"item": [
+				{
+					"name": "Add to Cart - Coconut Oil",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": 1,\n  \"productId\": 1,\n  \"quantity\": 2\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/cart",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "cart"]
+						}
+					}
+				},
+				{
+					"name": "Add to Cart - Olive Oil",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": 1,\n  \"productId\": 6,\n  \"quantity\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/cart",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "cart"]
+						}
+					}
+				},
+				{
+					"name": "Get Cart by User",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/cart/user/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "cart", "user", "1"]
+						}
+					}
+				},
+				{
+					"name": "Remove from Cart",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/cart/user/1/product/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "cart", "user", "1", "product", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Orders",
+			"item": [
+				{
+					"name": "Place Order - Coconut Oil",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": 1,\n  \"productId\": 1,\n  \"quantity\": 2\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/orders",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "orders"]
+						}
+					}
+				},
+				{
+					"name": "Place Order - Flaxseed Oil",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": 1,\n  \"productId\": 7,\n  \"quantity\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/orders",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "orders"]
+						}
+					}
+				},
+				{
+					"name": "Get Orders by User",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/orders/user/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "orders", "user", "1"]
+						}
+					}
+				},
+				{
+					"name": "Mark Order as Delivered",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/orders/deliver/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "orders", "deliver", "1"]
+						}
+					}
+				}
+			]
+		}
+	]
+}

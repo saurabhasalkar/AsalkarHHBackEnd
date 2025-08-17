@@ -1,0 +1,395 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/CMMN/20151109/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:flowable="http://flowable.org/cmmn"
+             xmlns:cmmndi="http://www.omg.org/spec/CMMN/20151109/CMMNDI"
+             xmlns:dc="http://www.omg.org/spec/CMMN/20151109/DC"
+             xmlns:di="http://www.omg.org/spec/CMMN/20151109/DI"
+             xmlns:design="http://flowable.org/design"
+             targetNamespace="http://flowable.org/cmmn"
+             design:palette="flowable-work-case-palette">
+
+  <case id="workflowManagement" name="Workflow Management"
+        flowable:initiatorVariableName="initiator"
+        flowable:candidateStarterGroups="flowableUser">
+
+    <extensionElements>
+      <flowable:data-dictionary-model key="workflowManagementPortal" sameDeployment="true">
+        <flowable:variable name="workflow" typeName="workflow"/>
+        <flowable:variable name="task" typeName="task"/>
+        <flowable:variable name="businessFile" typeName="businessFile"/>
+      </flowable:data-dictionary-model>
+    </extensionElements>
+
+    <casePlanModel id="planModel" name="Workflow Management">
+      <extensionElements>
+        <design:stencilid><![CDATA[CasePlanModel]]></design:stencilid>
+      </extensionElements>
+
+      <!-- ======================= -->
+      <!-- Stage 1: Upload         -->
+      <!-- ======================= -->
+      <planItem id="planItemstageUpload" name="Upload Stage" definitionRef="stageUpload">
+        <exitCriterion id="criterion_29" sentryRef="sentrycriterion_29" flowable:exitEventType="complete"/>
+      </planItem>
+
+      <!-- ======================= -->
+      <!-- Stage 2: Review         -->
+      <!-- ======================= -->
+      <planItem id="planItemstageReview" name="Review Stage" definitionRef="stageReview">
+        <entryCriterion id="criterion_15" sentryRef="sentrycriterion_15"/>
+        <exitCriterion id="criterion_32" sentryRef="sentrycriterion_32" flowable:exitEventType="complete"/>
+      </planItem>
+
+      <!-- ======================= -->
+      <!-- Stage 3: Consolidate    -->
+      <!-- ======================= -->
+      <planItem id="planItemstageConsolidate" name="Consolidate Stage" definitionRef="stageConsolidate">
+        <entryCriterion id="criterion_24" sentryRef="sentrycriterion_24"/>
+        <exitCriterion id="criterion_35" sentryRef="sentrycriterion_35" flowable:exitEventType="complete"/>
+      </planItem>
+
+      <!-- ===== Sentries between stages ===== -->
+      <sentry id="sentrycriterion_29">
+        <extensionElements><design:stencilid><![CDATA[ExitCriterion]]></design:stencilid></extensionElements>
+        <planItemOnPart id="sentryOnPartcriterion_29" sourceRef="planItemcmmnEventListener_1">
+          <standardEvent>complete</standardEvent>
+        </planItemOnPart>
+      </sentry>
+
+      <sentry id="sentrycriterion_15">
+        <extensionElements><design:stencilid><![CDATA[EntryCriterion]]></design:stencilid></extensionElements>
+        <planItemOnPart id="sentryOnPartcriterion_15" sourceRef="planItemstageUpload">
+          <standardEvent>complete</standardEvent>
+        </planItemOnPart>
+      </sentry>
+
+      <sentry id="sentrycriterion_32">
+        <extensionElements><design:stencilid><![CDATA[ExitCriterion]]></design:stencilid></extensionElements>
+        <planItemOnPart id="sentryOnPartcriterion_32" sourceRef="planItemcmmnEventListener_5">
+          <standardEvent>complete</standardEvent>
+        </planItemOnPart>
+      </sentry>
+
+      <sentry id="sentrycriterion_24">
+        <extensionElements><design:stencilid><![CDATA[EntryCriterion]]></design:stencilid></extensionElements>
+        <planItemOnPart id="sentryOnPartcriterion_24" sourceRef="planItemstageReview">
+          <standardEvent>complete</standardEvent>
+        </planItemOnPart>
+      </sentry>
+
+      <sentry id="sentrycriterion_35">
+        <extensionElements><design:stencilid><![CDATA[ExitCriterion]]></design:stencilid></extensionElements>
+        <planItemOnPart id="sentryOnPartcriterion_35" sourceRef="planItemcmmnEventListener_10">
+          <standardEvent>complete</standardEvent>
+        </planItemOnPart>
+      </sentry>
+
+      <!-- ============== -->
+      <!-- Stage bodies   -->
+      <!-- ============== -->
+
+      <!-- Upload Stage -->
+      <stage id="stageUpload" name="Upload Stage">
+        <extensionElements><design:stencilid><![CDATA[ExpandedStage]]></design:stencilid></extensionElements>
+
+        <!-- Stage completion button (shows only when stage completable) -->
+        <planItem id="planItemcmmnEventListener_1" name="Proceed to Next Stage" definitionRef="cmmnEventListener_1"/>
+
+        <!-- NEW: Human Upload task (required) -->
+        <planItem id="planItem_htUpload" name="Upload (Human)" definitionRef="htUpload">
+          <itemControl>
+            <requiredRule/>
+            <manualActivationRule/>
+          </itemControl>
+        </planItem>
+
+        <!-- Existing process-based Upload task -->
+        <planItem id="planItemtaskUpload" name="Upload Task" definitionRef="taskUpload">
+          <itemControl>
+            <repetitionRule flowable:counterVariable="repetitionCounter"
+                            flowable:ignoreCounterVariable="true"
+                            flowable:maxInstanceCount="1">
+              <extensionElements/>
+            </repetitionRule>
+            <manualActivationRule/>
+          </itemControl>
+        </planItem>
+
+        <!-- User event -->
+        <userEventListener id="cmmnEventListener_1" name="Proceed to Next Stage"
+                           flowable:availableCondition="${cmmn:isStageCompletable()}">
+          <extensionElements>
+            <design:stencilid><![CDATA[UserEventListener]]></design:stencilid>
+            <design:stencilsuperid><![CDATA[EventListener]]></design:stencilsuperid>
+          </extensionElements>
+        </userEventListener>
+
+        <!-- Human Task definition -->
+        <humanTask id="htUpload" name="Upload (Human)"
+                   flowable:assignee="${initiator}"
+                   flowable:formKey="uploadForm"
+                   flowable:priority="60"/>
+
+        <!-- Process Task definition -->
+        <processTask id="taskUpload" name="Upload Task">
+          <extensionElements>
+            <design:stencilid><![CDATA[ProcessTask]]></design:stencilid>
+            <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
+          </extensionElements>
+          <processRefExpression><![CDATA[workflowManagement-UploadTask]]></processRefExpression>
+        </processTask>
+      </stage>
+
+      <!-- Review Stage -->
+      <stage id="stageReview" name="Review Stage">
+        <extensionElements><design:stencilid><![CDATA[ExpandedStage]]></design:stencilid></extensionElements>
+
+        <!-- Stage completion button (now also requires approved == true) -->
+        <planItem id="planItemcmmnEventListener_5" name="Complete Review" definitionRef="cmmnEventListener_5"/>
+
+        <!-- Download (process) -->
+        <planItem id="planItemtaskDownload" name="Download Task" definitionRef="taskDownload">
+          <itemControl>
+            <repetitionRule flowable:counterVariable="repetitionCounter"
+                            flowable:ignoreCounterVariable="true"
+                            flowable:maxInstanceCount="1">
+              <extensionElements/>
+            </repetitionRule>
+            <manualActivationRule/>
+          </itemControl>
+          <!-- Kept: exit criterion when Reupload completes -->
+          <exitCriterion id="criterion_21" sentryRef="sentrycriterion_21" flowable:exitEventType="complete"/>
+        </planItem>
+
+        <!-- NEW: Human Review task (required) -->
+        <planItem id="planItem_htReview" name="Review (Human)" definitionRef="htReview">
+          <!-- Becomes available after Download completes -->
+          <entryCriterion id="entry_from_download" sentryRef="sentry_from_download_to_review"/>
+          <itemControl>
+            <requiredRule/>
+            <manualActivationRule/>
+          </itemControl>
+        </planItem>
+
+        <!-- Reupload (process) - now gated by human review result -->
+        <planItem id="planItemtaskReupload" name="Reupload Task" definitionRef="taskReupload">
+          <itemControl>
+            <repetitionRule flowable:counterVariable="repetitionCounter"
+                            flowable:ignoreCounterVariable="true"
+                            flowable:maxInstanceCount="1">
+              <extensionElements/>
+            </repetitionRule>
+            <manualActivationRule/>
+          </itemControl>
+          <!-- UPDATED: entry comes from Review completion with approved == false -->
+          <entryCriterion id="criterion_18" sentryRef="sentrycriterion_18"/>
+        </planItem>
+
+        <!-- Sentry: Download -> Review availability -->
+        <sentry id="sentry_from_download_to_review">
+          <extensionElements><design:stencilid><![CDATA[EntryCriterion]]></design:stencilid></extensionElements>
+          <planItemOnPart id="onpart_download_done" sourceRef="planItemtaskDownload">
+            <standardEvent>complete</standardEvent>
+          </planItemOnPart>
+        </sentry>
+
+        <!-- UPDATED sentry id reused: Review complete & NOT approved -> enable Reupload -->
+        <sentry id="sentrycriterion_18">
+          <extensionElements><design:stencilid><![CDATA[EntryCriterion]]></design:stencilid></extensionElements>
+          <planItemOnPart id="onpart_review_done_for_reupload" sourceRef="planItem_htReview">
+            <standardEvent>complete</standardEvent>
+          </planItemOnPart>
+          <ifPart>
+            <condition><![CDATA[${approved == false}]]></condition>
+          </ifPart>
+        </sentry>
+
+        <!-- Kept: Reupload completion forces Download to exit (cleanup) -->
+        <sentry id="sentrycriterion_21">
+          <extensionElements><design:stencilid><![CDATA[ExitCriterion]]></design:stencilid></extensionElements>
+          <planItemOnPart id="onpart_reupload_done" sourceRef="planItemtaskReupload">
+            <standardEvent>complete</standardEvent>
+          </planItemOnPart>
+        </sentry>
+
+        <!-- User event with stricter availability -->
+        <userEventListener id="cmmnEventListener_5" name="Complete Review"
+                           flowable:availableCondition="${cmmn:isStageCompletable() and approved == true}">
+          <extensionElements>
+            <design:stencilid><![CDATA[UserEventListener]]></design:stencilid>
+            <design:stencilsuperid><![CDATA[EventListener]]></design:stencilsuperid>
+          </extensionElements>
+        </userEventListener>
+
+        <!-- Human Review Task definition -->
+        <humanTask id="htReview" name="Review (Human)"
+                   flowable:candidateGroups="reviewers"
+                   flowable:formKey="reviewForm"
+                   flowable:priority="80"/>
+
+        <!-- Process Task definitions -->
+        <processTask id="taskDownload" name="Download Task">
+          <extensionElements>
+            <design:stencilid><![CDATA[ProcessTask]]></design:stencilid>
+            <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
+          </extensionElements>
+          <processRefExpression><![CDATA[workflowManagement-DownloadTask]]></processRefExpression>
+        </processTask>
+
+        <processTask id="taskReupload" name="Reupload Task">
+          <extensionElements>
+            <design:stencilid><![CDATA[ProcessTask]]></design:stencilid>
+            <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
+          </extensionElements>
+          <processRefExpression><![CDATA[workflowManagementReuploadTask]]></processRefExpression>
+        </processTask>
+      </stage>
+
+      <!-- Consolidate Stage -->
+      <stage id="stageConsolidate" name="Consolidate Stage">
+        <extensionElements><design:stencilid><![CDATA[ExpandedStage]]></design:stencilid></extensionElements>
+
+        <planItem id="planItemcmmnEventListener_10" name="Complete Consolidation" definitionRef="cmmnEventListener_10"/>
+
+        <planItem id="planItemtaskConsolidate" name="Consolidate Task" definitionRef="taskConsolidate">
+          <itemControl>
+            <manualActivationRule/>
+          </itemControl>
+        </planItem>
+
+        <userEventListener id="cmmnEventListener_10" name="Complete Consolidation"
+                           flowable:availableCondition="${cmmn:isStageCompletable()}">
+          <extensionElements>
+            <design:stencilid><![CDATA[UserEventListener]]></design:stencilid>
+            <design:stencilsuperid><![CDATA[EventListener]]></design:stencilsuperid>
+          </extensionElements>
+        </userEventListener>
+
+        <processTask id="taskConsolidate" name="Consolidate Task">
+          <extensionElements>
+            <design:stencilid><![CDATA[ProcessTask]]></design:stencilid>
+            <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
+          </extensionElements>
+          <processRefExpression><![CDATA[workflowManagementProcess]]></processRefExpression>
+        </processTask>
+      </stage>
+    </casePlanModel>
+  </case>
+
+  <!-- Diagram info kept as-is; new items have no shapes (optional for runtime) -->
+  <cmmndi:CMMNDI>
+    <cmmndi:CMMNDiagram id="CMMNDiagram_workflowManagement">
+      <cmmndi:CMMNShape id="CMMNShape_planModel" cmmnElementRef="planModel">
+        <dc:Bounds height="570.0" width="830.0" x="269.0" y="120.0"/>
+        <cmmndi:CMMNLabel/>
+      </cmmndi:CMMNShape>
+
+      <cmmndi:CMMNShape id="CMMNShape_planItemstageUpload" cmmnElementRef="planItemstageUpload">
+        <dc:Bounds height="140.0" width="770.0" x="299.0" y="150.0"/>
+        <cmmndi:CMMNLabel/>
+      </cmmndi:CMMNShape>
+      <cmmndi:CMMNShape id="CMMNShape_criterion_29" cmmnElementRef="criterion_29">
+        <dc:Bounds height="28.0" width="18.0" x="290.0" y="206.0"/>
+        <cmmndi:CMMNLabel/>
+      </cmmndi:CMMNShape>
+      <cmmndi:CMMNShape id="CMMNShape_planItemcmmnEventListener_1" cmmnElementRef="planItemcmmnEventListener_1">
+        <dc:Bounds height="30.0" width="30.0" x="364.0" y="205.0"/>
+        <cmmndi:CMMNLabel/>
+      </cmmndi:CMMNShape>
+      <cmmndi:CMMNShape id="CMMNShape_planItemtaskUpload" cmmnElementRef="planItemtaskUpload">
+        <dc:Bounds height="80.0" width="100.0" x="459.0" y="180.0"/>
+        <cmmndi:CMMNLabel/>
+      </cmmndi:CMMNShape>
+
+      <cmmndi:CMMNShape id="CMMNShape_planItemstageReview" cmmnElementRef="planItemstageReview">
+        <dc:Bounds height="140.0" width="770.0" x="299.0" y="320.0"/>
+        <cmmndi:CMMNLabel/>
+      </cmmndi:CMMNShape>
+      <cmmndi:CMMNShape id="CMMNShape_criterion_15" cmmnElementRef="criterion_15">
+        <dc:Bounds height="28.0" width="18.0" x="675.0" y="306.0"/>
+        <cmmndi:CMMNLabel/>
+      </cmmndi:CMMNShape>
+      <cmmndi:CMMNShape id="CMMNShape_criterion_32" cmmnElementRef="criterion_32">
+        <dc:Bounds height="28.0" width="18.0" x="290.0" y="376.0"/>
+        <cmmndi:CMMNLabel/>
+      </cmmndi:CMMNShape>
+      <cmmndi:CMMNShape id="CMMNShape_planItemcmmnEventListener_5" cmmnElementRef="planItemcmmnEventListener_5">
+        <dc:Bounds height="30.0" width="30.0" x="364.0" y="375.0"/>
+        <cmmndi:CMMNLabel/>
+      </cmmndi:CMMNShape>
+      <cmmndi:CMMNShape id="CMMNShape_planItemtaskDownload" cmmnElementRef="planItemtaskDownload">
+        <dc:Bounds height="80.0" width="100.0" x="459.0" y="350.0"/>
+        <cmmndi:CMMNLabel/>
+      </cmmndi:CMMNShape>
+      <cmmndi:CMMNShape id="CMMNShape_criterion_21" cmmnElementRef="criterion_21">
+        <dc:Bounds height="28.0" width="18.0" x="550.0" y="376.0"/>
+        <cmmndi:CMMNLabel/>
+      </cmmndi:CMMNShape>
+
+      <cmmndi:CMMNShape id="CMMNShape_planItemstageConsolidate" cmmnElementRef="planItemstageConsolidate">
+        <dc:Bounds height="140.0" width="770.0" x="299.0" y="490.0"/>
+        <cmmndi:CMMNLabel/>
+      </cmmndi:CMMNShape>
+      <cmmndi:CMMNShape id="CMMNShape_criterion_24" cmmnElementRef="criterion_24">
+        <dc:Bounds height="28.0" width="18.0" x="675.0" y="476.0"/>
+        <cmmndi:CMMNLabel/>
+      </cmmndi:CMMNShape>
+      <cmmndi:CMMNShape id="CMMNShape_criterion_35" cmmnElementRef="criterion_35">
+        <dc:Bounds height="28.0" width="18.0" x="290.0" y="546.0"/>
+        <cmmndi:CMMNLabel/>
+      </cmmndi:CMMNShape>
+      <cmmndi:CMMNShape id="CMMNShape_planItemcmmnEventListener_10" cmmnElementRef="planItemcmmnEventListener_10">
+        <dc:Bounds height="30.0" width="30.0" x="364.0" y="545.0"/>
+        <cmmndi:CMMNLabel/>
+      </cmmndi:CMMNShape>
+      <cmmndi:CMMNShape id="CMMNShape_planItemtaskConsolidate" cmmnElementRef="planItemtaskConsolidate">
+        <dc:Bounds height="80.0" width="100.0" x="459.0" y="520.0"/>
+        <cmmndi:CMMNLabel/>
+      </cmmndi:CMMNShape>
+
+      <!-- Edges preserved for existing sentries -->
+      <cmmndi:CMMNEdge id="CMMNEdge_cmmnConnector_25" cmmnElementRef="planItemstageReview" targetCMMNElementRef="criterion_24">
+        <di:extension>
+          <flowable:docker type="source" x="385.0" y="70.0"/>
+          <flowable:docker type="target" x="9.0" y="0.0"/>
+        </di:extension>
+        <di:waypoint x="684.0" y="459.95"/>
+        <di:waypoint x="684.0" y="476.0"/>
+        <cmmndi:CMMNLabel/>
+      </cmmndi:CMMNEdge>
+
+      <cmmndi:CMMNEdge id="CMMNEdge_cmmnConnector_36" cmmnElementRef="planItemcmmnEventListener_10" targetCMMNElementRef="criterion_35">
+        <di:extension>
+          <flowable:docker type="source" x="15.0" y="15.0"/>
+          <flowable:docker type="target" x="9.0" y="14.0"/>
+        </di:extension>
+        <di:waypoint x="363.9999990287354" y="560.0"/>
+        <di:waypoint x="307.9214807081784" y="560.0"/>
+        <cmmndi:CMMNLabel/>
+      </cmmndi:CMMNEdge>
+
+      <cmmndi:CMMNEdge id="CMMNEdge_cmmnConnector_16" cmmnElementRef="planItemstageUpload" targetCMMNElementRef="criterion_15">
+        <di:extension>
+          <flowable:docker type="source" x="385.0" y="70.0"/>
+          <flowable:docker type="target" x="9.0" y="0.0"/>
+        </di:extension>
+        <di:waypoint x="684.0" y="289.95"/>
+        <di:waypoint x="684.0" y="306.0"/>
+        <cmmndi:CMMNLabel/>
+      </cmmndi:CMMNEdge>
+
+      <cmmndi:CMMNEdge id="CMMNEdge_cmmnConnector_30" cmmnElementRef="planItemcmmnEventListener_1" targetCMMNElementRef="criterion_29">
+        <di:extension>
+          <flowable:docker type="source" x="15.0" y="15.0"/>
+          <flowable:docker type="target" x="9.0" y="14.0"/>
+        </di:extension>
+        <di:waypoint x="363.9999990287524" y="220.0"/>
+        <di:waypoint x="307.92148070825357" y="220.0"/>
+        <cmmndi:CMMNLabel/>
+      </cmmndi:CMMNEdge>
+
+      <!-- Note: edges for new human tasks are optional and omitted -->
+    </cmmndi:CMMNDiagram>
+  </cmmndi:CMMNDI>
+</definitions>
